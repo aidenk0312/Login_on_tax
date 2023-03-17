@@ -16,15 +16,24 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @PostMapping("/szs/signup")
+    public ResponseEntity<Object> signUp(@RequestBody Users user) {
+        Map<String, Object> response = userService.signUp(user);
+
+        if (response.containsKey("user")) {
+            return new ResponseEntity<>(response.get("user"), HttpStatus.CREATED);
+        } else {
+            return new ResponseEntity<>(response.get("message"), HttpStatus.BAD_REQUEST);
+        }
+    }
+
     @PostMapping("/szs/login")
     public ResponseEntity<Map<String, String>> login(@RequestBody Users user) {
         Map<String, String> response = userService.login(user.getUserId(), user.getPassword());
 
         if (response.containsKey("token")) {
-            // 로그인 성공
             return new ResponseEntity<>(response, HttpStatus.OK);
         } else {
-            // 로그인 실패 (예: 잘못된 사용자 ID 또는 비밀번호)
             return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
         }
     }

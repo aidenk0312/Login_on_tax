@@ -12,12 +12,15 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public Users signUp(Users user) {
+    public Map<String, Object> signUp(Users user) {
+        Map<String, Object> response = new HashMap<>();
         if (isValidUser(user)) {
-            return userRepository.save(user);
+            Users savedUser = userRepository.save(user);
+            response.put("user", savedUser);
         } else {
-            return null;
+            response.put("message", "가입 대상이 아닙니다.");
         }
+        return response;
     }
 
     private boolean isValidUser(Users user) {
@@ -25,10 +28,8 @@ public class UserService {
         List<String> validNames = Arrays.asList("홍길동", "김둘리", "마징가", "베지터", "손오공");
         List<String> validRegNos = Arrays.asList("860824-1655068", "921108-1582816", "880601-2455116", "910411-1656116", "820326-2715702");
 
-        // 사용자 이름 및 주민등록번호 유효성 검사 부분
         int index = validNames.indexOf(user.getName());
         if (index != -1 && validRegNos.get(index).equals(user.getRegNo())) {
-            // 중복 아이디 검사 부분
             return userRepository.findByUserId(user.getUserId()).isEmpty();
         }
         return false;

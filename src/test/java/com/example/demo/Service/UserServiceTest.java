@@ -1,52 +1,121 @@
 package com.example.demo.Service;
 
-import com.example.demo.Repository.UserRepository;
+import com.example.demo.Controller.UserController;
+import com.example.demo.Service.UserService;
 import com.example.demo.User.Users;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
-import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import java.util.HashMap;
+import java.util.Map;
 
-@ExtendWith(MockitoExtension.class)
-class UserServiceTest {
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-    @Mock
-    private UserRepository userRepository;
+@ExtendWith(SpringExtension.class)
+@WebMvcTest(UserController.class)
+class UserControllerTest {
 
-    @InjectMocks
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @MockBean
     private UserService userService;
 
-    private Users validUser;
-    private Users invalidUser;
+    private Users user;
 
     @BeforeEach
     void setUp() {
-        validUser = new Users("hong12", "123456", "홍길동", "860824-1655068");
-        invalidUser = new Users("invalid", "123456", "Invalid User", "123456-7890123");
+        user = new Users("hong12", "123456", "홍길동", "860824-1655068");
     }
 
     @Test
-    void signUp_success() {
-        lenient().when(userRepository.findByUserId(validUser.getUserId())).thenReturn(Optional.empty());
-        lenient().when(userRepository.save(validUser)).thenReturn(validUser);
+    void signUp_Success() throws Exception {
+        Map<String, Object> response = new HashMap<>();
+        response.put("user", user);
 
-        Users createdUser = userService.signUp(validUser);
-        assertNotNull(createdUser);
-        assertEquals(validUser.getName(), createdUser.getName());
+        when(userService.signUp(any(Users.class))).thenReturn(response);
+
+        mockMvc.perform(post("/szs/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(user)))
+                .andExpect(status().isCreated())
+                .andExpect(content().json(objectMapper.writeValueAsString(user)));
     }
 
     @Test
-    void signUp_failure() {
-        lenient().when(userRepository.findByUserId(invalidUser.getUserId())).thenReturn(Optional.empty());
+    void signUp_Failled() throws Exception {
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "가입 대상이 아닙니다.");
 
-        Users createdUser = userService.signUp(invalidUser);
-        assertNull(createdUser);
+        when(userService.signUp(any(Users.class))).thenReturn(response);
+
+        mockMvc.perform(post("/szs/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(user)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("가입 대상이 아닙니다."));
+    }
+
+    @Test
+    void login_Success() throws Exception {
+        Map<String, String> response = new HashMap<>();
+        response.put("token", "token_hong12_123456");
+        response.put("message", "로그인 성공");
+
+        when(userService.login(user.getUserId(), user.getPassword())).thenReturn(response);
+
+        mockMvc.perform(post("/szs/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(user)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").value("token_hong12_123456"))
+                .andExpect(jsonPath("$.message").value("로그인 성공"));
+    }
+
+    @Test
+    void login_PW_Failled() throws Exception {
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "비밀번호가 틀렸습니다.");
+
+        when(userService.login(user.getUserId(), "wrongPassword")).thenReturn(response);
+
+        Users wrongPasswordUser = new Users(user.getUserId(), "wrongPassword", user.getName(), user.getRegNo());
+
+        mockMvc.perform(post("/szs/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(wrongPasswordUser)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void login_Id_Failed() throws Exception {
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "아이디가 틀렸습니다.");
+
+        when(userService.login("wrongUserId", user.getPassword())).thenReturn(response);
+
+        Users wrongUserIdUser = new Users("wrongUserId", user.getPassword(), user.getName(), user.getRegNo());
+
+        mockMvc.perform(post("/szs/login")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8) // Change this line
+                        .content(objectMapper.writeValueAsString(wrongUserIdUser)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("아이디가 틀렸습니다.")); // Change this line
     }
 }
