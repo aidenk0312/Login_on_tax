@@ -1,7 +1,6 @@
 package com.example.demo.Service;
 
 import com.example.demo.Controller.UserController;
-import com.example.demo.Service.UserService;
 import com.example.demo.User.Users;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,8 +12,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,10 +20,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(UserController.class)
-class UserControllerTest {
+class UserServiceTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -113,9 +112,9 @@ class UserControllerTest {
         Users wrongUserIdUser = new Users("wrongUserId", user.getPassword(), user.getName(), user.getRegNo());
 
         mockMvc.perform(post("/szs/login")
-                        .contentType(MediaType.APPLICATION_JSON_UTF8) // Change this line
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .content(objectMapper.writeValueAsString(wrongUserIdUser)))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.message").value("아이디가 틀렸습니다.")); // Change this line
+                .andExpect(jsonPath("$.message").value("아이디가 틀렸습니다."));
     }
 }
