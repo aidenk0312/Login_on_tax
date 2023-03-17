@@ -5,8 +5,7 @@ import com.example.demo.User.Users;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class UserService {
@@ -33,5 +32,24 @@ public class UserService {
             return userRepository.findByUserId(user.getUserId()).isEmpty();
         }
         return false;
+    }
+
+    public Map<String, String> login(String userId, String password) {
+        Map<String, String> response = new HashMap<>();
+        Optional<Users> optionalUser = userRepository.findByUserId(userId);
+
+        if (optionalUser.isPresent()) {
+            Users user = optionalUser.get();
+
+            if (user.getPassword().equals(password)) {
+                response.put("token", "token_" + userId + "_" + System.currentTimeMillis());
+                response.put("message", "로그인 성공");
+            } else {
+                response.put("message", "비밀번호가 틀렸습니다.");
+            }
+        } else {
+            response.put("message", "아이디가 틀렸습니다.");
+        }
+        return response;
     }
 }
