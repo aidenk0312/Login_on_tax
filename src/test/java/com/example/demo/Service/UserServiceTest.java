@@ -1,13 +1,12 @@
 package com.example.demo.Service;
 
 import com.example.demo.Repository.UserRepository;
-import com.example.demo.User.User;
+import com.example.demo.User.Users;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
@@ -24,13 +23,13 @@ class UserServiceTest {
     @InjectMocks
     private UserService userService;
 
-    private User validUser;
-    private User invalidUser;
+    private Users validUser;
+    private Users invalidUser;
 
     @BeforeEach
     void setUp() {
-        validUser = new User("hong12", "123456", "홍길동", "860824-1655068");
-        invalidUser = new User("invalid", "123456", "Invalid User", "123456-7890123");
+        validUser = new Users("hong12", "123456", "홍길동", "860824-1655068");
+        invalidUser = new Users("invalid", "123456", "Invalid User", "123456-7890123");
     }
 
     @Test
@@ -38,7 +37,7 @@ class UserServiceTest {
         lenient().when(userRepository.findByUserId(validUser.getUserId())).thenReturn(Optional.empty());
         lenient().when(userRepository.save(validUser)).thenReturn(validUser);
 
-        User createdUser = userService.signUp(validUser);
+        Users createdUser = userService.signUp(validUser);
         assertNotNull(createdUser);
         assertEquals(validUser.getName(), createdUser.getName());
     }
@@ -47,7 +46,7 @@ class UserServiceTest {
     void signUp_failure() {
         lenient().when(userRepository.findByUserId(invalidUser.getUserId())).thenReturn(Optional.empty());
 
-        User createdUser = userService.signUp(invalidUser);
+        Users createdUser = userService.signUp(invalidUser);
         assertNull(createdUser);
     }
 }

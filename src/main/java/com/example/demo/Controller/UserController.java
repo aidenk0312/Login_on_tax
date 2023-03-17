@@ -1,7 +1,7 @@
 package com.example.demo.Controller;
 
 import com.example.demo.Service.UserService;
-import com.example.demo.User.User;
+import com.example.demo.User.Users;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,8 +15,8 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/szs/signup")
-    public ResponseEntity<User> signUp(@RequestBody User user) {
-        User createdUser = userService.signUp(user);
+    public ResponseEntity<Users> signUp(@RequestBody Users user) {
+        Users createdUser = userService.signUp(user);
 
         if (createdUser != null) {
             // 회원 가입 성공
