@@ -2,19 +2,22 @@ package com.example.demo.Controller;
 
 import com.example.demo.Service.UserService;
 import com.example.demo.User.Users;
+import com.example.demo.Util.JwtTokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 @RestController
 public class UserController {
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private JwtTokenUtil jwtTokenUtil;
 
     @PostMapping("/szs/signup")
     public ResponseEntity<Object> signUp(@RequestBody Users user) {
@@ -35,6 +38,20 @@ public class UserController {
             return new ResponseEntity<>(response, HttpStatus.OK);
         } else {
             return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+        }
+    }
+
+    @GetMapping("/szs/me")
+    public ResponseEntity<Users> getMyInfo(HttpServletRequest request) {
+        String token = request.getHeader("Authorization").substring(7);
+        String userId = jwtTokenUtil.getUserIdFromToken(token);
+
+        Users user = userService.getUserById(userId);
+
+        if (user != null) {
+            return new ResponseEntity<>(user, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 }
