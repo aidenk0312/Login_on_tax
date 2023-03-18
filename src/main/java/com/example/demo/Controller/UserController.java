@@ -42,16 +42,21 @@ public class UserController {
     }
 
     @GetMapping("/szs/me")
-    public ResponseEntity<Users> getMyInfo(HttpServletRequest request) {
-        String token = request.getHeader("Authorization").substring(7);
-        String userId = jwtTokenUtil.getUserIdFromToken(token);
+    public ResponseEntity<?> getMyInfo(HttpServletRequest request) {
+        try {
+            String token = request.getHeader("Authorization").substring(7);
+            String userId = jwtTokenUtil.getUserIdFromToken(token);
 
-        Users user = userService.getUserById(userId);
+            Users user = userService.getUserById(userId);
 
-        if (user != null) {
-            return new ResponseEntity<>(user, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            if (user != null) {
+                return new ResponseEntity<>(user, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 }

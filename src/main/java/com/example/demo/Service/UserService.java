@@ -2,6 +2,7 @@ package com.example.demo.Service;
 
 import com.example.demo.Repository.UserRepository;
 import com.example.demo.User.Users;
+import com.example.demo.Util.JwtTokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +12,9 @@ import java.util.*;
 public class UserService {
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private JwtTokenUtil jwtTokenUtil;
 
     public Map<String, Object> signUp(Users user) {
         Map<String, Object> response = new HashMap<>();
@@ -37,19 +41,25 @@ public class UserService {
 
     public Map<String, String> login(String userId, String password) {
         Map<String, String> response = new HashMap<>();
-        Optional<Users> optionalUser = userRepository.findByUserId(userId);
+        try {
+            Optional<Users> optionalUser = userRepository.findByUserId(userId);
 
-        if (optionalUser.isPresent()) {
-            Users user = optionalUser.get();
+            if (optionalUser.isPresent()) {
+                Users user = optionalUser.get();
 
-            if (user.getPassword().equals(password)) {
-                response.put("token", "token_" + userId + "_" + System.currentTimeMillis());
-                response.put("message", "로그인 성공");
+                if (user.getPassword().equals(password)) {
+                    String jwtToken = JwtTokenUtil.generateToken(userId);
+
+                    response.put("token", jwtToken);
+                    response.put("message", "로그인 성공");
+                } else {
+                    response.put("message", "비밀번호가 틀렸습니다.");
+                }
             } else {
-                response.put("message", "비밀번호가 틀렸습니다.");
+                response.put("message", "아이디가 틀렸습니다.");
             }
-        } else {
-            response.put("message", "아이디가 틀렸습니다.");
+        } catch (Exception e) {
+            response.put("message", "로그인 중 오류가 발생했습니다: " + e.getMessage());
         }
         return response;
     }
