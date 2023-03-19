@@ -5,7 +5,7 @@ import com.example.demo.Domain.Users;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Service {
+public class UsersService {
     private static final Map<String, Users> users = new HashMap<>();
 
     static {

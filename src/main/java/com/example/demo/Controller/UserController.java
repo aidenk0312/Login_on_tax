@@ -1,7 +1,7 @@
 package com.example.demo.Controller;
 
 import com.example.demo.Domain.Users;
-import com.example.demo.Service.Service;
+import com.example.demo.Service.UsersService;
 import com.example.demo.Util.JwtUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -22,7 +22,7 @@ import java.util.Map;
 public class UserController {
     private static final Map<String, String> allowedUsers = new HashMap<>();
 
-    private final Service service = new Service();
+    private final UsersService service = new UsersService();
     private final JwtUtil jwtUtil = new JwtUtil();
 
     static {

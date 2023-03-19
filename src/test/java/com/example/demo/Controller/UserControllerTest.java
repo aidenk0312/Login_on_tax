@@ -1,10 +1,8 @@
 package com.example.demo.Controller;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import com.example.demo.Domain.Users;
 import com.example.demo.Util.JwtUtil;
-import com.example.demo.Service.Service;
+import com.example.demo.Service.UsersService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -39,7 +37,7 @@ public class UserControllerTest {
     private String jwtToken;
 
     @MockBean
-    private Service service;
+    private UsersService service;
 
     @BeforeEach
     public void setUp() {
