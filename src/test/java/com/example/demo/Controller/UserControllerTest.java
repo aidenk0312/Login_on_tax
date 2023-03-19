@@ -3,21 +3,23 @@ package com.example.demo.Controller;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.example.demo.Domain.Users;
+import com.example.demo.Util.JwtUtil;
+import com.example.demo.Service.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -30,6 +32,20 @@ public class UserControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @MockBean
+    private JwtUtil jwtUtil;
+
+    private String jwtToken;
+
+    @MockBean
+    private Service service;
+
+    @BeforeEach
+    public void setUp() {
+        Users testUser = new Users("hong12", "123456", "홍길동", "860824-1655068");
+        when(service.getUserById("hong12")).thenReturn(testUser);
+    }
 
     @Test
     @DisplayName("회원가입 성공")
