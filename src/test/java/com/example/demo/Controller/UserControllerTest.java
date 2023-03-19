@@ -12,8 +12,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.client.RestTemplate;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,12 +41,15 @@ public class UserControllerTest {
     private String jwtToken;
 
     @MockBean
-    private UsersService service;
+    private UsersService usersServiceService;
+
+    @MockBean
+    private RestTemplate restTemplate;
 
     @BeforeEach
     public void setUp() {
         Users testUser = new Users("hong12", "123456", "홍길동", "860824-1655068");
-        when(service.getUserById("hong12")).thenReturn(testUser);
+        when(usersServiceService.getUserById("hong12")).thenReturn(testUser);
     }
 
     @Test

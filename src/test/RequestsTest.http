@@ -1,0 +1,72 @@
+### 회원가입 성공 테스트
+POST http://localhost:8080/szs/signup
+Content-Type: application/json
+
+{
+  "name": "홍길동",
+  "regNo": "860824-1655068"
+}
+
+<> 2023-03-20T010355.200.txt
+<> 2023-03-19T224123.200.txt
+<> 2023-03-19T224115.200.txt
+
+### 회원가입 실패 테스트
+POST http://localhost:8080/szs/signup
+Content-Type: application/json
+
+{
+  "name": "이순신",
+  "regNo": "800101-1234567"
+}
+
+<> 2023-03-20T010401.403.txt
+<> 2023-03-19T224120.403.txt
+
+### 로그인 성공 테스트
+POST http://localhost:8080/szs/login
+Content-Type: application/json
+
+{
+  "userId": "hong12",
+  "password": "123456"
+}
+
+<> 2023-03-20T010404.200.txt
+<> 2023-03-20T004108.200.txt
+<> 2023-03-20T004049.200.txt
+<> 2023-03-19T232434.200.txt
+<> 2023-03-19T231929.200.txt
+<> 2023-03-19T225950.200.txt
+<> 2023-03-19T225615.404.json
+
+### 로그인 실패 테스트
+POST http://localhost:8080/szs/login
+Content-Type: application/json
+
+{
+  "userId": "invalidUser",
+  "password": "wrongPassword"
+}
+
+<> 2023-03-19T230002.401.txt
+
+### 로그인 정보 가져오기
+GET http://localhost:8080/szs/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJob25nMTIifQ.1BYkSTLt4ANEn_1kRlxOsDdHOWYeWgLpxKnPiQSBJcE
+
+<> 2023-03-20T010416.200.json
+<> 2023-03-20T004117.200.json
+<> 2023-03-19T232442.200.json
+<> 2023-03-19T231937.404.json
+
+
+### 스크랩 테스트
+POST http://localhost:8080/szs/scrap
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJob25nMTIifQ.fVaCt4zjW0habWRgy621oVQwh4neNC9ckscg90X38ow
+
+{
+  "name": "홍길동",
+  "regNo": "860824-1655068"
+}
