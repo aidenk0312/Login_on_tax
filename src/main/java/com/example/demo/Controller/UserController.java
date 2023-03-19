@@ -1,62 +1,53 @@
 package com.example.demo.Controller;
 
-import com.example.demo.Service.UserService;
-import com.example.demo.User.Users;
-import com.example.demo.Util.JwtTokenUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.demo.Domain.Users;
+import com.example.demo.Service.Service;
+import com.example.demo.Util.JwtUtil;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
+@RequiredArgsConstructor
 public class UserController {
-    @Autowired
-    private UserService userService;
+    private static final Map<String, String> allowedUsers = new HashMap<>();
 
-    @Autowired
-    private JwtTokenUtil jwtTokenUtil;
+    private final Service service = new Service();
+    private final JwtUtil jwtUtil = new JwtUtil();
+
+    static {
+        allowedUsers.put("홍길동", "860824-1655068");
+        allowedUsers.put("김둘리", "921108-158216");
+        allowedUsers.put("마징가", "880601-2455116");
+        allowedUsers.put("배지터", "910411-1656116");
+        allowedUsers.put("손오공", "820326-2715702");
+    }
 
     @PostMapping("/szs/signup")
-    public ResponseEntity<Object> signUp(@RequestBody Users user) {
-        Map<String, Object> response = userService.signUp(user);
+    public ResponseEntity<String> signUp(@RequestBody Users user) {
+        String regNo = allowedUsers.get(user.getName());
 
-        if (response.containsKey("user")) {
-            return new ResponseEntity<>(response.get("user"), HttpStatus.CREATED);
+        if (regNo != null && regNo.equals(user.getRegNo())) {
+            return ResponseEntity.ok("회원 가입 성공");
         } else {
-            return new ResponseEntity<>(response.get("message"), HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("회원 가입 실패: 유효하지 않은 사용자");
         }
     }
 
     @PostMapping("/szs/login")
-    public ResponseEntity<Map<String, String>> login(@RequestBody Users user) {
-        Map<String, String> response = userService.login(user.getUserId(), user.getPassword());
+    public ResponseEntity<String> login(@RequestBody Map<String, String> request) {
+        String userId = request.get("userId");
+        String password = request.get("password");
 
-        if (response.containsKey("token")) {
-            return new ResponseEntity<>(response, HttpStatus.OK);
+        if (service.authenticate(userId, password)) {
+            String token = jwtUtil.createToken(userId);
+            return ResponseEntity.ok(token);
         } else {
-            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 실패: 잘못된 사용자 ID 또는 비밀번호");
         }
     }
-
-    @GetMapping("/szs/me")
-    public ResponseEntity<?> getMyInfo(HttpServletRequest request) {
-        try {
-            String token = request.getHeader("Authorization").substring(7);
-            String userId = jwtTokenUtil.getUserIdFromToken(token);
-
-            Users user = userService.getUserById(userId);
-
-            if (user != null) {
-                return new ResponseEntity<>(user, HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
-            }
-        } catch (Exception e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
 }
