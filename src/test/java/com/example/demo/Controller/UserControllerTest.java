@@ -17,13 +17,25 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.test.web.client.ExpectedCount;
+import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.web.client.RestTemplate;
+
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.http.HttpMethod;
+
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
+
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 
 @SpringBootTest
@@ -42,10 +54,16 @@ public class UserControllerTest {
     @Mock
     private JwtUtil jwtUtil;
 
+    private RestTemplate restTemplate;
+    private MockRestServiceServer mockRestServiceServer;
+
     @BeforeEach
     public void setUp() {
         Users testUser = new Users("hong12", "123456", "홍길동", "860824-1655068");
         when(service.getUserById("hong12")).thenReturn(testUser);
+
+        restTemplate = new RestTemplate();
+        mockRestServiceServer = MockRestServiceServer.createServer(restTemplate);
     }
 
     @Test
@@ -121,5 +139,31 @@ public class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.userId").value(testUserId));
+    }
+
+    @Test
+    @DisplayName("스크랩 성공")
+    public void scrapSuccess() throws Exception {
+        String testUserId = "hong12";
+        String testToken = generateTestToken(testUserId);
+
+        Users testUser = new Users("hong12", "123456", "홍길동", "860824-1655068");
+        when(service.getUserById("hong12")).thenReturn(testUser);
+
+        String scrapUrl = "https://codetest.3o3.co.kr/v2/scrap";
+        mockRestServiceServer.expect(ExpectedCount.once(), requestTo(scrapUrl))
+                .andExpect(method(HttpMethod.POST))
+                .andRespond(withStatus(HttpStatus.OK));
+
+        Map<String, String> params = new HashMap<>();
+        params.put("name", "홍길동");
+        params.put("regNo", "860824-1655068");
+
+        mockMvc.perform(post("/szs/scrap")
+                        .header("Authorization", "Bearer " + testToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(params)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isNotEmpty());
     }
 }
