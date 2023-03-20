@@ -1,6 +1,6 @@
 3.3 Backend 과제 Test - 회원 가입 및 로그인 API 프로젝트
 
-1. Swagger 주소: http://localhost:8080/swagger-ui
+1. Swagger 주소: http://localhost:8080/swagger-ui/index.html#/
 
 2. 구현 방법: 이 프로젝트는 다음과 같은 API를 구현합니다:
  - 회원 가입 API
