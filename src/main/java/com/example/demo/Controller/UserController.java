@@ -5,6 +5,8 @@ import com.example.demo.Domain.Users;
 import com.example.demo.Service.ScrapDataService;
 import com.example.demo.Service.UsersService;
 import com.example.demo.Util.JwtUtil;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -12,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import org.springframework.web.client.RestClientException;
@@ -31,7 +32,7 @@ public class UserController {
 
     static {
         allowedUsers.put("홍길동", "860824-1655068");
-        allowedUsers.put("김둘리", "921108-158216");
+        allowedUsers.put("김둘리", "921108-1582816");
         allowedUsers.put("마징가", "880601-2455116");
         allowedUsers.put("배지터", "910411-1656116");
         allowedUsers.put("손오공", "820326-2715702");
@@ -114,12 +115,11 @@ public class UserController {
 
                             scrapDataService.saveScrapData(scrapData);
 
-                            return ResponseEntity.ok(scrapResponse.getBody());
+                            String formattedResponse = scrapData.formatJson(scrapResponse.getBody());
+                            return ResponseEntity.ok(formattedResponse);
                         } catch (RestClientException e) {
-                            // 외부 API 호출 중 발생한 예외 처리
                             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("스크랩 요청 중 오류가 발생했습니다: " + e.getMessage());
                         } catch (Exception e) {
-                            // 기타 예외 처리
                             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("알 수 없는 오류가 발생했습니다: " + e.getMessage());
                         }
                     } else {
@@ -133,6 +133,64 @@ public class UserController {
             }
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("인증 토큰이 필요합니다.");
+        }
+    }
+
+    @GetMapping("/szs/refund")
+    public ResponseEntity<?> calculateRefund(@RequestHeader("Authorization") String authHeader) {
+        try {
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String jwtToken = authHeader.substring(7);
+
+                Claims claims = Jwts.parserBuilder().setSigningKey(jwtUtil.getSecretKey()).build().parseClaimsJws(jwtToken).getBody();
+                String userId = claims.getSubject();
+
+                Users user = service.getUserById(userId);
+                if (user != null) {
+                    ScrapData scrapData = scrapDataService.getScrapDataByUserId(userId);
+                    if (scrapData != null) {
+                        ObjectMapper objectMapper = new ObjectMapper();
+                        JsonNode scrapDataJson = objectMapper.readTree(scrapData.getJsonList());
+                        JsonNode jsonList = scrapDataJson.get("data").get("jsonList");
+
+                        int 산출세액 = scrapData.getJsonValueAsIntSafely("산출세액");
+                        int 퇴직연금납입금액 = scrapData.getJsonValueAsIntSafely("퇴직연금납입금액");
+                        int 보험료납입금액 = scrapData.getJsonValueAsIntSafely("보험료납입금액");
+                        int 의료비납입금액 = scrapData.getJsonValueAsIntSafely("의료비납입금액");
+                        int 교육비납입금액 = scrapData.getJsonValueAsIntSafely("교육비납입금액");
+                        int 기부금납입금액 = scrapData.getJsonValueAsIntSafely("기부금납입금액");
+                        int 총급여 = scrapData.getJsonValueAsIntSafely("총급여");
+
+                        int 근로소득세액공제금액 = (int) (산출세액 * 0.55);
+                        int 퇴직연금세액공제금액 = (int) (퇴직연금납입금액 * 0.15);
+                        int 보험료공제금액 = (int) (보험료납입금액 * 0.12);
+                        int 의료비공제금액 = (int) Math.max((의료비납입금액 - 총급여 * 0.03) * 0.15, 0);
+                        int 교육비공제금액 = (int) (교육비납입금액 * 0.15);
+                        int 기부금공제금액 = (int) (기부금납입금액 * 0.15);
+                        int 특별세액공제금액 = 보험료공제금액 + 의료비공제금액 + 교육비공제금액 + 기부금공제금액;
+                        int 표준세액공제금액 = 특별세액공제금액 < 130000 ? 130000 : 0;
+                        if (표준세액공제금액 == 130000) {
+                            특별세액공제금액 = 0;
+                        }
+
+                        int 결정세액 = 산출세액 - 근로소득세액공제금액 - 특별세액공제금액 - 표준세액공제금액 - 퇴직연금세액공제금액;
+                        if (결정세액 < 0) {
+                            결정세액 = 0;
+                        }
+
+                        Map<String, String> responseData = new HashMap<>();
+                        responseData.put("이름", user.getName());
+                        responseData.put("결정세액", String.format("%,d", 결정세액));
+                        responseData.put("퇴직연금세액공제", String.format("%,d", 퇴직연금세액공제금액));
+
+                        return ResponseEntity.ok(responseData);
+                    }
+                }
+            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal Server Error: " + e.getMessage());
         }
     }
 }

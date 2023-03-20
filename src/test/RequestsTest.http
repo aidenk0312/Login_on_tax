@@ -45,8 +45,8 @@ POST http://localhost:8080/szs/login
 Content-Type: application/json
 
 {
-  "userId": "invalidUser",
-  "password": "wrongPassword"
+  "userId": "testid",
+  "password": "testpw"
 }
 
 <> 2023-03-19T230002.401.txt
@@ -64,9 +64,13 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJob25nMTIifQ.Xq6IGMToTvx1SI
 ### 스크랩 테스트
 POST http://localhost:8080/szs/scrap
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJob25nMTIifQ.Xq6IGMToTvx1SI8TWbtXWWccA8H5_OxUmAL12Ne9Lh8
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJob25nMTIifQ.POrUjzHO4HGJeRhpnlREco0dBxIPnc4lX5YsJ0jJbeA
 
 {
   "name": "홍길동",
   "regNo": "860824-1655068"
 }
+
+### 결정세액과 퇴직연금세액공제금액 계산
+GET http://localhost:8080/szs/refund
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJob25nMTIifQ.POrUjzHO4HGJeRhpnlREco0dBxIPnc4lX5YsJ0jJbeA

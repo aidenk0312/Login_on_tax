@@ -1,10 +1,12 @@
 package com.example.demo.Controller;
 
+import com.example.demo.Domain.ScrapData;
 import com.example.demo.Domain.Users;
+import com.example.demo.Service.ScrapDataService;
 import com.example.demo.Service.UsersService;
-import com.example.demo.Util.JwtUtil;
 import static com.example.demo.Util.TestTokenUtil.generateTestToken;
 
+import com.example.demo.Util.TestTokenUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -51,11 +53,11 @@ public class UserControllerTest {
     @Mock
     private UsersService service;
 
-    @Mock
-    private JwtUtil jwtUtil;
-
     private RestTemplate restTemplate;
     private MockRestServiceServer mockRestServiceServer;
+
+    @Mock
+    private ScrapDataService scrapDataService;
 
     @BeforeEach
     public void setUp() {
@@ -165,5 +167,43 @@ public class UserControllerTest {
                         .content(objectMapper.writeValueAsString(params)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isNotEmpty());
+    }
+
+    @Test
+    @DisplayName("환급액 계산 성공")
+    public void calculateRefundSuccess() throws Exception {
+        String testUserId = "hong12";
+        String testToken = generateTestToken(testUserId);
+
+        Users testUser = new Users("hong12", "123456", "홍길동", "860824-1655068");
+        when(service.getUserById("hong12")).thenReturn(testUser);
+
+        String scrapUrl = "https://codetest.3o3.co.kr/v2/scrap";
+        mockRestServiceServer.expect(ExpectedCount.once(), requestTo(scrapUrl))
+                .andExpect(method(HttpMethod.POST))
+                .andRespond(withStatus(HttpStatus.OK));
+
+        Map<String, String> params = new HashMap<>();
+        params.put("name", "홍길동");
+        params.put("regNo", "860824-1655068");
+
+        mockMvc.perform(post("/szs/scrap")
+                        .header("Authorization", "Bearer " + testToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(params)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isNotEmpty());
+
+        ScrapData scrapData = new ScrapData();
+        scrapData.setJsonList("{ \"data\": { \"jsonList\": { \"산출세액\": 100000, \"퇴직연금납입금액\": 50000, \"보험료납입금액\": 40000, \"의료비납입금액\": 30000, \"교육비납입금액\": 20000, \"기부금납입금액\": 10000, \"총급여\": 500000 } } }");
+        when(scrapDataService.getScrapDataByUserId(testUserId)).thenReturn(scrapData);
+
+        mockMvc.perform(get("/szs/refund")
+                        .header("Authorization", "Bearer " + testToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.이름").value("홍길동"))
+                .andExpect(jsonPath("$.결정세액").isNotEmpty())
+                .andExpect(jsonPath("$.퇴직연금세액공제").isNotEmpty());
     }
 }

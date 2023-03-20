@@ -10,10 +10,10 @@ public class UsersService {
 
     static {
         users.put("hong12", new Users("hong12", "123456", "홍길동", "860824-1655068"));
-        users.put("kim12", new Users("kim12", "654321", "김둘리", "921108-158216"));
-        users.put("ma12", new Users("ma12", "789123", "마징가", "880601-2455116"));
-        users.put("ba12", new Users("ba12", "456123", "배지터", "910411-1656116"));
-        users.put("son", new Users("son", "987321", "손오공", "820326-2715702"));
+        users.put("dooli91", new Users("dooli91", "abcdef", "김둘리", "921108-158216"));
+        users.put("mazinger88", new Users("mazinger88", "qwerty", "마징가", "880601-2455116"));
+        users.put("vegeta91", new Users("vegeta91", "asdfgh", "배지터", "910411-1656116"));
+        users.put("goku82", new Users("goku82", "zxcvbn", "손오공", "820326-2715702"));
     }
 
     public boolean authenticate(String userId, String password) {
