@@ -53,7 +53,7 @@ Content-Type: application/json
 
 ### 로그인 정보 가져오기
 GET http://localhost:8080/szs/me
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJob25nMTIifQ.1BYkSTLt4ANEn_1kRlxOsDdHOWYeWgLpxKnPiQSBJcE
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJob25nMTIifQ.sMt8l0qs0iZ6Q7l5pYhxnzyJnYHcZOQyMulzI_Apcpk
 
 <> 2023-03-20T010416.200.json
 <> 2023-03-20T004117.200.json
@@ -64,7 +64,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJob25nMTIifQ.1BYkSTLt4ANEn_
 ### 스크랩 테스트
 POST http://localhost:8080/szs/scrap
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJob25nMTIifQ.fVaCt4zjW0habWRgy621oVQwh4neNC9ckscg90X38ow
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJob25nMTIifQ.sMt8l0qs0iZ6Q7l5pYhxnzyJnYHcZOQyMulzI_Apcpk
 
 {
   "name": "홍길동",
