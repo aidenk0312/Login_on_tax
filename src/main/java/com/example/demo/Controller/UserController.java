@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +39,7 @@ public class UserController {
         allowedUsers.put("손오공", "820326-2715702");
     }
 
+    @ApiOperation("로그인 API")
     @PostMapping("/szs/signup")
     public ResponseEntity<String> signUp(@RequestBody Users user) {
         String regNo = allowedUsers.get(user.getName());
@@ -49,6 +51,7 @@ public class UserController {
         }
     }
 
+    @ApiOperation("사용자 인증 API")
     @PostMapping("/szs/login")
     public ResponseEntity<String> login(@RequestBody Map<String, String> request) {
         String userId = request.get("userId");
@@ -62,6 +65,7 @@ public class UserController {
         }
     }
 
+    @ApiOperation("정보 조회 API")
     @GetMapping("/szs/me")
     public ResponseEntity<?> getMyInfo(@RequestHeader("Authorization") String authHeader) {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
@@ -84,6 +88,7 @@ public class UserController {
         }
     }
 
+    @ApiOperation("스크랩 API")
     @PostMapping("/szs/scrap")
     public ResponseEntity<?> scrap(@RequestHeader("Authorization") String authHeader, @RequestBody Map<String, String> request) {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
@@ -136,6 +141,7 @@ public class UserController {
         }
     }
 
+    @ApiOperation("결정세액과 퇴직연금세액공제금액 계산 API")
     @GetMapping("/szs/refund")
     public ResponseEntity<?> calculateRefund(@RequestHeader("Authorization") String authHeader) {
         try {
